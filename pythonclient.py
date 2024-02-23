@@ -1,61 +1,51 @@
-import threading
-import queue
-import sounddevice as sd
-import numpy as np
-import socket
+import pyaudio
+import wave
+from pydub import AudioSegment
 
-# Variables globales
-RECORD_BLOCK_SIZE = 1024
-PLAY_BLOCK_SIZE = 1024
-RECORD_DEVICE = None
-PLAY_DEVICE = None
-RECORD_CHANNELS = 1
-PLAY_CHANNELS = 1
-RECORD_STREAM = None
-PLAY_STREAM = None
-RECORD_QUEUE = queue.Queue()
-PLAY_QUEUE = queue.Queue()
+def enregistrer_audio(nom_fichier, duree_seconde):
+    chunk = 1024  
+    format_audio = pyaudio.paInt16
+    canaux = 2  
+    frequence_echantillonnage = 44100  
+    temps_enregistrement = duree_seconde  
 
-def record_callback(indata, frames, time, status):
-    RECORD_QUEUE.put(indata.copy())
+    enregistreur_audio = pyaudio.PyAudio()
 
-def play_callback(outdata, frames, time, status):
-    if not PLAY_QUEUE.empty():
-        outdata[:] = PLAY_QUEUE.get().astype(np.float32)
-    else:
-        outdata.fill(0)
+    stream = enregistreur_audio.open(format=format_audio,
+                                      channels=canaux,
+                                      rate=frequence_echantillonnage,
+                                      input=True,
+                                      frames_per_buffer=chunk)
 
-def record_transmit():
-    global RECORD_STREAM
-    with sd.InputStream(device=RECORD_DEVICE, channels=RECORD_CHANNELS, callback=record_callback, blocksize=RECORD_BLOCK_SIZE):
-        while True:
-            data = RECORD_QUEUE.get()
+    print("Enregistrement en cours...")
 
-                client.send(data)
+    frames = []
 
-def receive_play(socket):
-    global PLAY_STREAM
-    with sd.OutputStream(device=PLAY_DEVICE, channels=PLAY_CHANNELS, callback=play_callback, blocksize=PLAY_BLOCK_SIZE):
-        while True:
-            data = socket.recv(PLAY_BLOCK_SIZE)
-            PLAY_QUEUE.put(np.frombuffer(data, dtype=np.float32))
+    for i in range(int(frequence_echantillonnage / chunk * temps_enregistrement)):
+        donnees_audio = stream.read(chunk)
+        frames.append(donnees_audio)
+
+    print("Enregistrement terminé.")
+
+    stream.stop_stream()
+    stream.close()
+    enregistreur_audio.terminate()
+
+    wave_writer = wave.open(nom_fichier, 'wb')
+    wave_writer.setnchannels(canaux)
+    wave_writer.setsampwidth(enregistreur_audio.get_sample_size(format_audio))
+    wave_writer.setframerate(frequence_echantillonnage)
+    wave_writer.writeframes(b''.join(frames))
+    wave_writer.close()
+
+def convertir_wav_mp3(nom_fichier_wav, nom_fichier_mp3):
+    audio = AudioSegment.from_wav(nom_fichier_wav)
+    audio.export(nom_fichier_mp3, format="mp3")
 
 if __name__ == "__main__":
-    SERVER_IP = "10.10.87.136"
-    SERVER_PORT = 9001
-    CLIENT_ID = input("Enter your user ID: ")
+    nom_fichier_wav = "enregistrement.wav"
+    nom_fichier_mp3 = "enregistrement.mp3"
+    duree_seconde = 10
 
-    # Connect to server
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.connect((SERVER_IP, SERVER_PORT))
-    server_socket.send(CLIENT_ID.encode())
-
-    # Specify recipient
-    recipient_id = input("Enter recipient ID: ")
-    server_socket.send(recipient_id.encode())
-
-    # Threads for record-transmit and receive-play
-    record_transmit_thread = threading.Thread(target=record_transmit)
-    receive_play_thread = threading.Thread(target=receive_play, args=(server_socket,))
-    record_transmit_thread.start()
-    receive_play_thread.start() 
+    enregistrer_audio(nom_fichier_wav, duree_seconde)
+    convertir_wav_mp3(nom_fichier_wav, nom_fichier_mp3)
