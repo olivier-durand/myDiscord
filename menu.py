@@ -56,8 +56,8 @@ eye_open_image = Image.open("image/eye_open.jpeg")
 eye_closed_image = Image.open("image/eye_closed.jpeg")
 
 # redimensionnement de l'image
-eye_open_image = eye_open_image.resize((20, 20))
-eye_closed_image = eye_closed_image.resize((20, 20))
+eye_open_image = eye_open_image.resize((30, 30))
+eye_closed_image = eye_closed_image.resize((30, 30))
 
 # conversion de l'image redimensionnée
 eye_open_image = ImageTk.PhotoImage(eye_open_image)
