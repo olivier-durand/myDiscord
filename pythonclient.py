@@ -30,7 +30,7 @@ def record_transmit():
     with sd.InputStream(device=RECORD_DEVICE, channels=RECORD_CHANNELS, callback=record_callback, blocksize=RECORD_BLOCK_SIZE):
         while True:
             data = RECORD_QUEUE.get()
-            for client in clients:
+
                 client.send(data)
 
 def receive_play(socket):
