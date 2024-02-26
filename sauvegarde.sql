@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.3.0, for Win64 (x86_64)
 --
--- Host: localhost    Database: mydiscord
+-- Host: localhost    Database: myDiscord
 -- ------------------------------------------------------
 -- Server version	8.3.0
 
@@ -71,30 +71,6 @@ LOCK TABLES `message` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `messageaudio`
---
-
-DROP TABLE IF EXISTS `messageaudio`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `messageaudio` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `nom_fichier` varchar(255) DEFAULT NULL,
-  `audio` blob,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `messageaudio`
---
-
-LOCK TABLES `messageaudio` WRITE;
-/*!40000 ALTER TABLE `messageaudio` DISABLE KEYS */;
-/*!40000 ALTER TABLE `messageaudio` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `utilisateur`
 --
 
@@ -155,4 +131,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-26 15:09:00
+-- Dump completed on 2024-02-26 17:16:26
