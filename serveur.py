@@ -24,8 +24,8 @@ def handle_client(client_socket, client_address):
     client_socket.close()
 
 # Adresse et port du serveur
-host = '127.0.0.1'
-port = 55555
+host = '10.10.93.165'
+port = 9090
 
 # Créer un socket pour le serveur
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
