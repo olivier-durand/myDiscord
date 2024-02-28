@@ -1,53 +1,126 @@
 import socket
 import threading
 import tkinter
+import tkinter.scrolledtext
+from tkinter import simpledialog
 
-# Fonction pour envoyer des messages au serveur
-def send_message(event=None):
-    message = message_entry.get()
-    message_entry.delete(0, tkinter.END)
-    client_socket.send(message.encode())
-
-# Fonction pour recevoir des messages du serveur
-def receive_message():
-    while True:
-        try:
-            message = client_socket.recv(1024).decode()
-            chat_text.insert(tkinter.END, message + '\n')
-        except OSError:
-            break
-
-# Configuration de la connexion au serveur
+# Adresse et port du serveur
 host = '127.0.0.1'
-port = 55555
+port = 9090
 
-# Création de la fenêtre de chat
-window = tkinter.Tk()
-window.title('Chat en local')
+class Client:
+    def __init__(self, host, port):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((host, port))
+        
+        # Demande le surnom du client
+        self.msg = tkinter.Tk()
+        self.msg.withdraw()
+        self.surnom = simpledialog.askstring("Surnom", "Entrez votre surnom s'il vous plaît", parent=self.msg)
+        
+        self.gui_done = False
+        self.running = True
 
-# Zone de texte pour afficher les messages
-chat_text = tkinter.Text(window)
-chat_text.pack(fill=tkinter.BOTH, expand=True)
+        gui_thread = threading.Thread(target=self.gui_loop)
+        receive_thread = threading.Thread(target=self.receive)
 
-# Zone de texte pour saisir les messages
-message_entry = tkinter.Entry(window)
-message_entry.pack(fill=tkinter.BOTH, side=tkinter.LEFT, expand=True)
-message_entry.bind("<Return>", send_message)
+        gui_thread.start()
+        receive_thread.start()
 
-# Bouton pour envoyer les messages
-send_button = tkinter.Button(window, text="Envoyer", command=send_message)
-send_button.pack(fill=tkinter.BOTH, side=tkinter.RIGHT)
+    def gui_loop(self):
+        self.win = tkinter.Tk()
+        self.win.config(bg='cyan')
 
-# Connexion au serveur
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((host, port))
+        self.chat_label = tkinter.Label(self.win, text="Chat", bg="cyan")
+        self.chat_label.configure(font="arial 12")
+        self.chat_label.pack(padx=20, pady=5)
 
-# Démarrer un thread pour recevoir les messages du serveur
-receive_thread = threading.Thread(target=receive_message)
-receive_thread.start()
+        self.text_area = tkinter.scrolledtext.ScrolledText(self.win)
+        self.text_area.pack(padx=20, pady=5)
+        self.text_area.config(state="disabled")
 
-# Démarrer la boucle principale de l'interface graphique
-window.mainloop()
+        self.msg_label = tkinter.Label(self.win, text="Message", bg="cyan")
+        self.msg_label.config(font="arial 12")  
+        self.msg_label.pack(padx=20, pady=5)
 
-# Fermer la connexion avec le serveur
-client_socket.close()
+        self.saisie = tkinter.Text(self.win, height=3)
+        self.saisie.pack(padx=20, pady=5)
+
+        self.btn_envoie = tkinter.Button(self.win, text="Envoyer", command=self.ecrire)
+        self.btn_envoie.configure(font="arial 12")
+        self.btn_envoie.pack(padx=20, pady=5)
+
+        self.gui_done = True
+
+        self.win.protocol("WM_DELETE_WINDOW", self.stop)
+
+        self.win.mainloop()
+
+    def ecrire(self):
+        message = f"{self.surnom} : {self.saisie.get('1.0', 'end')}"
+        self.sock.send(message.encode('utf-8'))
+        self.saisie.delete('1.0', 'end')
+
+    def stop(self):
+        self.running = False
+        self.win.destroy()
+        self.sock.close()
+
+    def receive(self):
+        while self.running:
+            try:
+                message = self.sock.recv(1024)
+                if not message:  # Si le message est vide, la connexion est fermée
+                    self.stop()
+                    break
+                if message == b'surnom':
+                    self.sock.send(self.surnom.encode("utf-8"))
+                else:
+                    if self.gui_done:
+                        self.text_area.config(state="normal")
+                        self.text_area.insert("end", message.decode())
+                        self.text_area.yview("end")
+                        self.text_area.config(state="disabled")
+            except ConnectionAbortedError:
+                break
+            except:
+                print("Erreur")
+                self.sock.close()
+                break
+
+    def enregistrer_message(self, message):
+        # Mettez ici votre logique pour enregistrer le message
+        pass
+
+    # Méthode pour afficher la liste des utilisateurs dans une fenêtre séparée
+    def show_user_list(self, cursor):
+        user_list_window = tkinter.Toplevel()
+        user_list_window.title("Liste des utilisateurs")
+        user_list_window.geometry("300x300")  # Définir les dimensions de la fenêtre de la liste des utilisateurs
+
+        # Récupérer la liste des utilisateurs depuis la base de données
+        cursor.execute("SELECT username FROM user")
+        users = cursor.fetchall()
+
+        # Afficher les utilisateurs dans un tableau
+        for i, user in enumerate(users, start=1):
+            if user[0] != self.username:  # Ne pas afficher l'utilisateur connecté lui-même
+                user_label = tkinter.Label(user_list_window, text=user[0])
+                user_label.grid(row=i, column=0, padx=10, pady=5)
+
+    # Méthodes pour ouvrir les fenêtres des différentes fonctionnalités
+    def open_users_window(self):
+        pass  # Remplir cette méthode pour afficher la fenêtre des utilisateurs
+    
+    def open_option_window(self):
+        pass  # Remplir cette méthode pour afficher la fenêtre des options
+    
+    def open_info_window(self):
+        pass  # Remplir cette méthode pour afficher la fenêtre d'informations
+
+    def logout(self):
+        pass  # Remplir cette méthode pour gérer la déconnexion
+
+if __name__ == "__main__":
+    # Initialisation du client
+    client = Client(host, port)

@@ -1,30 +1,8 @@
 import socket
 import threading
 
-# Fonction pour gérer les connexions des clients
-def handle_client(client_socket, client_address):
-    print(f"Connexion acceptée depuis {client_address}")
-
-    while True:
-        # Recevoir les données du client
-        data = client_socket.recv(1024)
-        if not data:
-            break
-
-        # Afficher le message reçu
-        print(f"Message de {client_address}: {data.decode()}")
-
-        # Envoyer le message à tous les autres clients
-        for client in clients:
-            if client != client_socket:
-                client.send(data)
-
-    # Fermer la connexion avec le client
-    print(f"Connexion avec {client_address} fermée.")
-    client_socket.close()
-
 # Adresse et port du serveur
-host = '10.10.93.165'
+host = '127.0.0.1'
 port = 9090
 
 # Créer un socket pour le serveur
@@ -32,18 +10,60 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 server.listen()
 
-print(f"Serveur en écoute sur {host}:{port}")
-
-# Liste pour stocker les connexions des clients
+# Liste pour stocker les connexions des clients et leurs surnoms
 clients = []
+surnoms = []
 
-while True:
-    # Accepter les connexions entrantes
-    client_socket, client_address = server.accept()
-    clients.append(client_socket)
+# Fonction pour diffuser un message à tous les clients
+def broadcast(message):
+    for client in clients:
+        client.send(message)
 
-    # Démarrer un thread pour gérer la connexion du client
-    client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-    client_thread.start()
+# Fonction pour gérer les connexions des clients
+def handle(client):
+    while True:
+        try:
+            # Recevoir les données du client
+            message = client.recv(1024)
+            print(f"Surnom {surnoms[clients.index(client)]}: {message.decode('utf-8')}")
+            broadcast(message)
+        except:
+            # Gérer les erreurs de connexion
+            index = clients.index(client)
+            clients.remove(client)
+            client.close()
+            surnom = surnoms[index]
+            surnoms.remove(surnom)
+            break
 
+# Fonction pour recevoir les connexions entrantes des clients
+def recevoir():
+    while True:
+        # Accepter une connexion entrante
+        client, adress = server.accept()
+        print(f"Connecté avec {str(adress)}")
+        
+        # Envoyer un message demandant le surnom
+        client.send("SURNOM".encode("utf-8"))
+        surnom = client.recv(1024).decode("utf-8")
 
+        # Ajouter le client et son surnom à la liste
+        surnoms.append(surnom)
+        clients.append(client)
+
+        # Afficher le surnom du client
+        print(f"Surnom du client : {surnom}")
+
+        # Diffuser un message informant de la connexion du client
+        broadcast(f"{surnom} connecté au serveur\n".encode("utf-8"))
+
+        # Envoyer un message de confirmation au client
+        client.send("Connecté au serveur\n".encode("utf-8"))
+
+        # Démarrer un thread pour gérer le client
+        thread = threading.Thread(target=handle, args=(client,))
+        thread.start()
+
+# Lancement du serveur
+print("Attente de connexion...")
+recevoir()
