@@ -2,13 +2,20 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 from PIL import Image, ImageTk
 import os
+from database import Database_Discord
 
+db = Database_Discord()
 
 def submit_form():
     email = email_entry.get()
     password = password_entry.get()
-    # Remplacez cette logique par votre propre vérification d'authentification
-    if email == "laplateforme.io" and password == "password":
+
+    # Recherche de l'utilisateur dans la base de données
+    db.curseur.execute("SELECT * FROM utilisateur WHERE email = %s AND `Mot de passe` = %s", (email, password))
+    utilisateur = db.curseur.fetchone()  # Récupérer le premier utilisateur correspondant
+
+    # Vérification si l'utilisateur existe
+    if utilisateur:
         messagebox.showinfo("Connexion réussie", "Connexion réussie !")
     else:
         messagebox.showerror("Erreur de connexion", "Adresse email ou mot de passe incorrect.")
@@ -36,7 +43,7 @@ def forgot_password():
 # Création de la fenêtre principale
 root = tk.Tk()
 root.title("Page d'accueil Discord")
-root.geometry("800x700")  # Définition de la taille de la fenêtre à 900x800 pixels
+root.geometry("900x800")  # Définition de la taille de la fenêtre à 900x800 pixels
 
 # Ouverture de l'image avec PIL
 image = Image.open("image/fond-d.jpg")
@@ -44,7 +51,7 @@ image = Image.open("image/fond-d.jpg")
 background_image = ImageTk.PhotoImage(image)
 
 # Création de la zone de canevas pour afficher l'image de fond et les éléments d'interface utilisateur
-canvas = tk.Canvas(root, width=800, height=700)
+canvas = tk.Canvas(root, width=900, height=800)
 canvas.pack()
 
 # Affichage de l'image de fond

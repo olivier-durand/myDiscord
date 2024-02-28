@@ -1,6 +1,30 @@
 import tkinter as tk    
 from tkinter import messagebox
 from PIL import Image, ImageTk
+from database import Database_Discord
+
+db = Database_Discord()
+
+def add_utilisateur():
+    Nom = nom_entry.get()
+    Prénom = prenom_entry.get()
+    Email = email_entry.get()
+    Motdepasse = motdepasse_entry.get()
+    Confirmervotremotdepasse = confirmermotdepasse_entry.get()
+    id_category = 1  
+
+    if Nom and Prénom and Email and Confirmervotremotdepasse:
+        db = Database_Discord()  # Créer une instance de la classe Database_Discord
+        db.curseur.execute("INSERT INTO utilisateur (nom, prenom, email, `Mot de passe`, `Confirmer votre mot de passe`, id_category) VALUES (%s, %s, %s, %s, %s, %s)",
+           (Nom, Prénom, Email, Motdepasse, Confirmervotremotdepasse, id_category))
+
+        db.connexion.commit()  # Utiliser la connexion de la classe Database_Discord
+        messagebox.showinfo("Succès", "Vous êtes inscrit avec succès !")
+        # You can also add a confirmation message here
+    else:
+        messagebox.showwarning("Avertissement", "Veuillez remplir tous les champs.")
+
+
 
 def toggle_password_visibility():
     global show_password, motdepasse_entry, confirmermotdepasse_entry, eye_open_image, eye_closed_image
@@ -22,12 +46,12 @@ def submit_form():
 
 root = tk.Tk()  # Correction 1
 root.title("page d'inscription Discord")  # Correction 2
-root.geometry("800x700")
+root.geometry("900x800")
 
 image = Image.open("image/fond-d.jpg")
 background_image = ImageTk.PhotoImage(image)  # Correction de la variable typo
 
-canvas = tk.Canvas(root, width=800, height=700)  # Correction 3
+canvas = tk.Canvas(root, width=900, height=800)  # Correction 3
 canvas.pack()
 
 canvas.create_image(0, 0, anchor=tk.NW, image=background_image)
@@ -69,7 +93,7 @@ show_hide_button = tk.Button(root, image=eye_closed_image, command=toggle_passwo
 canvas.create_window(450, 480, window=show_hide_button)
 
 # bouton d'inscription
-login_button = tk.Button(root, text="S'inscrire", command=submit_form, bg="blue", fg="white")  # Correction de la typo
+login_button = tk.Button(root, text="S'inscrire", command=add_utilisateur, bg="blue", fg="white")  # Correction de la typo
 canvas.create_window(450, 580, window=login_button)
 
 root.mainloop()
