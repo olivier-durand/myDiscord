@@ -5,7 +5,7 @@ import tkinter.scrolledtext
 from tkinter import simpledialog
 
 # Adresse et port du serveur
-host = '127.0.0.1'
+host = '10.10.98.182'
 port = 9090
 
 class Client:
@@ -83,9 +83,9 @@ class Client:
                         self.text_area.config(state="disabled")
             except ConnectionAbortedError:
                 break
-            except:
-                print("Erreur")
-                self.sock.close()
+            except Exception as e:
+                print("Erreur:", e)
+                self.stop()
                 break
 
     def enregistrer_message(self, message):
@@ -104,7 +104,7 @@ class Client:
 
         # Afficher les utilisateurs dans un tableau
         for i, user in enumerate(users, start=1):
-            if user[0] != self.username:  # Ne pas afficher l'utilisateur connecté lui-même
+            if user[0] != self.surnom:  # Ne pas afficher l'utilisateur connecté lui-même
                 user_label = tkinter.Label(user_list_window, text=user[0])
                 user_label.grid(row=i, column=0, padx=10, pady=5)
 

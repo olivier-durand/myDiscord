@@ -2,7 +2,7 @@ import socket
 import threading
 
 # Adresse et port du serveur
-host = '127.0.0.1'
+host = '10.10.98.182'
 port = 9090
 
 # Créer un socket pour le serveur
