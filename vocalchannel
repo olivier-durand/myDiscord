@@ -1,4 +1,5 @@
 import mysql.connector
+import os
 
 def enregistrer_audio_db(nom_fichier_audio, chemin_audio):
     try:
@@ -24,17 +25,16 @@ def enregistrer_audio_db(nom_fichier_audio, chemin_audio):
         # Valider et enregistrer les modifications dans la base de données
         connexion.commit()
 
-        print("Le fichier audio a été enregistré avec succès dans la base de données.")
+        print("Le fichier audio a ete enregistre avec succes dans la base de donnees.")
 
     except Exception as e:
         print(f"Une erreur s'est produite : {e}")
 
     finally:
         # Fermer la connexion
-        if 'connexion' in locals():
+        if connexion.is_connected():
             curseur.close()
             connexion.close()
 
 # Utilisation de la fonction pour enregistrer un message audio dans la base de données
-    
-    chemin_audio("enregistrement.wav")
+enregistrer_audio_db("enregistrement.wav","enregistrement.mp3")
