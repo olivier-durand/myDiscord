@@ -17,6 +17,8 @@ def submit_form():
     # Vérification si l'utilisateur existe
     if utilisateur:
         messagebox.showinfo("Connexion réussie", "Connexion réussie !")
+        root.destroy()
+        os.system("python emenu.py")
     else:
         messagebox.showerror("Erreur de connexion", "Adresse email ou mot de passe incorrect.")
 
