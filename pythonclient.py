@@ -47,7 +47,8 @@ if __name__ == "__main__":
     enregistreur = EnregistreurAudio()
     nom_fichier_wav = "enregistrement.wav"
     nom_fichier_mp3 = "enregistrement.mp3"
-    duree_seconde = 30
+    duree_seconde = 20
 
     enregistreur.enregistrer_audio(nom_fichier_wav, duree_seconde)
     convertir_wav_mp3(nom_fichier_wav, nom_fichier_mp3)
+    
