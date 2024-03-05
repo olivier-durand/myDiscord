@@ -17,7 +17,7 @@ class Menu:
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.background_image)
 
         # Affichage des textes en blanc
-        self.canvas.create_text(450, 150, text="Bienvenue sur le Channel Discord", font=("Helvetica", 40), fill="white")
+        self.canvas.create_text(450, 150, text="Bienvenue sur le Channel Discord!", font=("Helvetica", 40), fill="white")
 
         # Position et texte des boutons
         self.button_texts = ['Messagerie instantanée', 'Voice Chat', 'Déconnexion']
