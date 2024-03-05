@@ -1,0 +1,54 @@
+import mysql.connector
+import os
+
+class GestionBaseDeDonnees:
+    def __init__(self, host, user, password, database):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.database = database
+        self.connexion = None
+        self.curseur = None
+
+    def connecter(self):
+        self.connexion = mysql.connector.connect(
+            host=self.host,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+        self.curseur = self.connexion.cursor()
+
+    def deconnecter(self):
+        if self.connexion.is_connected():
+            self.curseur.close()
+            self.connexion.close()
+
+    def enregistrer_audio(self, nom_fichier_audio, chemin_audio):
+        try:
+            self.connecter()
+
+            # Lire le contenu du fichier audio
+            with open(chemin_audio, "rb") as fichier_audio:
+                contenu_audio = fichier_audio.read()
+
+            # Insérer le contenu du fichier audio dans la base de données
+            requete = "INSERT INTO vocal (nom_fichier, contenu_audio) VALUES (%s, %s)"
+            valeurs = (nom_fichier_audio, contenu_audio)
+            self.curseur.execute(requete, valeurs)
+
+            # Valider et enregistrer les modifications dans la base de données
+            self.connexion.commit()
+
+            print("Le fichier audio a ete enregistre avec succes dans la base de donnees.")
+
+        except Exception as e:
+            print(f"Une erreur s'est produite : {e}")
+
+        finally:
+            self.deconnecter()
+
+# Utilisation de la classe pour enregistrer un message audio dans la base de données
+gestion_bdd = GestionBaseDeDonnees(host="localhost", user="root", password="Poussin13", database="myDiscord")
+gestion_bdd.enregistrer_audio("enregistrement.wav", "enregistrement.mp3")
+
