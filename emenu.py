@@ -46,7 +46,7 @@ class Menu:
         import chat
 
     def import_vocal(self):
-        import vocal
+        import pythonclient
 
     def disconnect(self):
         self.master.destroy()
