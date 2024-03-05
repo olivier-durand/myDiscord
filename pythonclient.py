@@ -1,3 +1,4 @@
+import tkinter as tk
 import pyaudio
 import wave
 from pydub import AudioSegment
@@ -43,12 +44,26 @@ def convertir_wav_mp3(nom_fichier_wav, nom_fichier_mp3):
     audio = AudioSegment.from_wav(nom_fichier_wav)
     audio.export(nom_fichier_mp3, format="mp3")
 
-if __name__ == "__main__":
+def enregistrer_et_convertir():
+    duree_seconde = int(duree_entry.get())
     enregistreur = EnregistreurAudio()
     nom_fichier_wav = "enregistrement.wav"
     nom_fichier_mp3 = "enregistrement.mp3"
-    duree_seconde = 20
-
     enregistreur.enregistrer_audio(nom_fichier_wav, duree_seconde)
     convertir_wav_mp3(nom_fichier_wav, nom_fichier_mp3)
-    
+    print("Enregistrement terminé et converti en MP3.")
+
+# Interface graphique Tkinter
+root = tk.Tk()
+root.title("Enregistrement Audio")
+
+label = tk.Label(root, text="Durée de l'enregistrement (en secondes):")
+label.pack()
+
+duree_entry = tk.Entry(root)
+duree_entry.pack()
+
+enregistrer_button = tk.Button(root, text="Enregistrer et Convertir en MP3", command=enregistrer_et_convertir)
+enregistrer_button.pack()
+
+root.mainloop()
