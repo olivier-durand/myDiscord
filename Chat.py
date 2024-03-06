@@ -2,6 +2,7 @@ import pygame
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime
+import discord
 
 class Chat:
     def __init__(self, username):
@@ -9,6 +10,7 @@ class Chat:
         self.messages = []
 
     def charger_messages(self):
+        connection = None
         try:
             connection = mysql.connector.connect(
                 host='localhost',
@@ -23,7 +25,7 @@ class Chat:
         except Error as e:
             print("Erreur lors de la connexion à la base de données:", e)
         finally:
-            if connection.is_connected():
+            if connection is not None and connection.is_connected():
                 cursor.close()
                 connection.close()
 
@@ -35,6 +37,7 @@ class Chat:
         self.enregistrer_message(message, date_heure)
 
     def enregistrer_message(self, message, date_heure):
+        connection = None
         try:
             connection = mysql.connector.connect(
                 host='localhost',
@@ -50,7 +53,7 @@ class Chat:
         except Error as e:
             print("Erreur lors de la connexion à la base de données:", e)
         finally:
-            if connection.is_connected():
+            if connection is not None and connection.is_connected():
                 cursor.close()
                 connection.close()
 
@@ -68,7 +71,7 @@ NOIR = (0, 0, 0)
 police = pygame.font.Font(None, 32)
 
 # Utilisation de la classe Chat
-username = input("Entrez votre nom d'utilisateur : ")
+username = discord.utilisateur
 mon_chat = Chat(username)
 mon_chat.charger_messages()
 
@@ -76,7 +79,11 @@ running = True
 message = ""
 clock = pygame.time.Clock()
 
+scroll_offset = 0
+scroll_speed = 20
+
 while running:
+    # Gestion des événements
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -88,18 +95,31 @@ while running:
                 message = message[:-1]
             else:
                 message += event.unicode
-
-    ecran.fill(BLANC)
-    y = 10
+    
+    # Calcul de la position des messages en fonction du décalage vertical
+    y = 10 - scroll_offset
     for msg in mon_chat.messages:
         texte = f"{msg[0]} ({msg[1]}): {msg[2]}"
         surface_texte = police.render(texte, True, NOIR)
         ecran.blit(surface_texte, (10, y))
         y += 40
 
+    # Gestion du défilement avec les touches fléchées
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP]:
+        scroll_offset += scroll_speed
+    if keys[pygame.K_DOWN]:
+        scroll_offset -= scroll_speed
+
+    # Limitation de la position du défilement
+    max_scroll = len(mon_chat.messages) * 40 - hauteur
+    scroll_offset = max(0, min(scroll_offset, max_scroll))
+
+    # Affichage du message en cours de frappe
     zone_texte = police.render(message, True, NOIR)
     ecran.blit(zone_texte, (10, hauteur - 40))
 
+    # Mise à jour de l'affichage
     pygame.display.flip()
     clock.tick(60)
 
