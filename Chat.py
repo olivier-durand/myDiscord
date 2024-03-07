@@ -2,7 +2,9 @@ import pygame
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime
-import discord
+from database import Database_Discord
+
+db = Database_Discord()
 
 class Chat:
     def __init__(self, username):
