@@ -14,9 +14,9 @@ class Chat:
         try:
             connection = mysql.connector.connect(
                 host='localhost',
-                database='votre_base_de_donnees',
-                user='votre_utilisateur',
-                password='votre_mot_de_passe'
+                database='myDiscord',
+                user='root',
+                password='azerty'
             )
             if connection.is_connected():
                 cursor = connection.cursor()
